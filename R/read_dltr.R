@@ -3,13 +3,24 @@
 #' @param file `character(1)`, file path to logbook or trend data.
 #'
 #' @import data.table
+#' @export
+#' @examples
+#' f <- system.file("logbook.txt", package = "dltr")
+#' lb <- read_logbook(f)
+#' lb
 read_dltr <- function(file) {
     if (!file.exists(file))
         stop(file, " doesn't exist")
 
-    lt <- fread(file)
-    lt
+    if (!is_logbook_file(file))
+        stop("Currently only logbook files are supported")
+
+    .reshape_logbook(file)
 }
+
+#' @export
+#' @rdname read_dltr
+read_logbook <- read_dltr
 
 #' Test Logbook and Trend file format
 #'

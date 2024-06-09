@@ -10,23 +10,83 @@ test_that(".read_logbook", {
     expect_s3_class(lb$DateTime, "POSIXct")
 })
 
-test_that(".start_therapy_index", {
-    lb <- data.table(
-        Label = c("foo", "Start of therapy", "bar", "Start of therapy")
+test_that("value_at", {
+   lb <- data.table(
+        DateTime = 1:8 * 60,
+        Label = c("Start of therapy", "Ventilation settings",
+                  "Vaporizer setting", "Ventilation settings",
+                  "PEEP", "FGF", "FGF", "FGF"),
+        Current = c(2, 0, 0.5, 2, 5, 0.5, 0.6, 0.7),
+        CaseId = 1
     )
-    expect_in(.start_therapy_index(lb), c(2, 4))
+    expect_equal(value_at(lb, "FGF", 5, "start")[,V1], 0.5)
+    expect_equal(value_at(lb, "FGF", 6, "start")[,V1], 0.6)
+    expect_equal(value_at(lb, "FGF", 7, "start")[,V1], 0.7)
+    expect_equal(value_at(lb, "FGF", 3, "vaporizer-opening")[,V1], 0.5)
+    expect_equal(value_at(lb, "FGF", 2, "mechanical-ventilation")[,V1], 0.5)
+    expect_equal(value_at(lb, "PEEP", 15, "start")[,V1], 5)
 })
 
-test_that(".stop_therapy_index", {
-    lb <- data.table(
-        Label = c(
-            "System state changed", "System state changed", "bar",
-            "System state changed"
-        ),
-        Old = c("Operation", "Operation", "bar", "Operation"),
-        Current = c("bar", "Standby", "Standby", "Standby")
+
+test_that(".reference_time", {
+   lb <- data.table(
+        DateTime = 1:4,
+        Label = c("Start of therapy", "Ventilation settings",
+                  "Vaporizer setting", "Ventilation settings"),
+        Current = c(2, 0, 0.5, 2),
+        CaseId = 1
     )
-    expect_in(.stop_therapy_index(lb), c(2, 4))
+    expect_equal(.reference_time(lb, "start"), 1)
+    expect_equal(.reference_time(lb, "vaporizer-opening"), 3)
+    expect_equal(.reference_time(lb, "mechanical-ventilation"), 4)
+})
+
+test_that("filter_short_cases", {
+    lb <- data.table(
+        DateTime = 1:3,
+        Label = c("Start of therapy", "bar", "Case duration"),
+        Current = c(2, NA, 2),
+        CaseId = 1
+    )
+    expect_equal(filter_short_cases(lb, min_duration = 1), setindex(lb, NULL))
+    expect_equal(filter_short_cases(lb, min_duration = 10), lb[0,])
+})
+
+test_that("case_duration", {
+    lb <- data.table(
+        Label = c("foo", "Case duration", "bar"),
+        Current = c(NA, 2.5, NA)
+    )
+    expect_equal(case_duration(lb), 2.5)
+})
+
+test_that("case_start", {
+    lb <- data.table(
+        DateTime = 2:5,
+        Label = c("foo", "Start of therapy", "bar", "Start of therapy"),
+        Current = 1,
+        CaseId = c(1, 2, 2, 3)
+    )
+    expect_in(case_start(lb), c(NA, 3, 5))
+})
+
+test_that("case_end", {
+    lb <- data.table(
+        DateTime = 2:5,
+        Label = c("foo", "Case duration", "bar", "Case duration")
+    )
+    expect_in(case_end(lb), c(3, 5))
+})
+
+test_that(".add_anaesthesia_case_id", {
+   lb <- data.table(
+        DateTime = 1:6,
+        Label = c(
+            "Start of therapy", "Case duration", "bar",
+            "Start of therapy", "Case duration", "foo"
+        )
+    )
+    expect_equal(.add_anaesthesia_case_id(lb)$CaseId, c(1, 1, NA, 2, 2, NA))
 })
 
 test_that(".fgf_index", {
@@ -62,6 +122,25 @@ test_that(".vaporizer_setting_index", {
         Label = c("Vaporizer setting", "foo", "bar", "Vaporizer setting")
     )
     expect_in(.vaporizer_setting_index(lb), c(1, 4))
+})
+
+test_that(".vaporizer_settings", {
+    lb <- data.table(
+        DateTime = lubridate::ymd_hm(
+            c(rep("2024-06-04 12:45", 3), "2024-06-04 13:00")
+        ),
+        Label = c("Vaporizer setting", "foo", "bar", "Vaporizer setting"),
+        Current = c(5.0, NA, NA, 4.8),
+        Unit = "",
+        `etCO2 [mmHg]` = c(35, NA, NA, 37)
+    )
+    r <- data.table(
+        DateTime = lubridate::ymd_hm(c("2024-06-04 12:45", "2024-06-04 13:00")),
+        Label = rep(c("Vaporizer setting"), 2),
+        Current = c(5.0, 4.8),
+        Unit = rep(c("Vol%"), 2)
+    )
+    expect_equal(.vaporizer_settings(lb), r)
 })
 
 test_that(".melt_measurements", {

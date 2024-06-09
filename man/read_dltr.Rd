@@ -2,13 +2,21 @@
 % Please edit documentation in R/read_dltr.R
 \name{read_dltr}
 \alias{read_dltr}
+\alias{read_logbook}
 \title{Read Draeger Logbook and Trend data.}
 \usage{
 read_dltr(file)
+
+read_logbook(file)
 }
 \arguments{
 \item{file}{\code{character(1)}, file path to logbook or trend data.}
 }
 \description{
 Read Draeger Logbook and Trend data.
+}
+\examples{
+f <- system.file("logbook.txt", package = "dltr")
+lb <- read_logbook(f)
+lb
 }
