@@ -3,7 +3,7 @@ test_that(".read_logbook throws errors", {
 })
 
 test_that(".read_logbook", {
-    lb <- .read_logbook(test_path("..", "..", "inst", "logbook.txt"))
+    lb <- .read_logbook(system.file("logbook.txt", package = "dltr"))
 
     expect_true(is.data.table(lb))
 
