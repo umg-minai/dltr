@@ -78,6 +78,30 @@ test_that("case_end", {
     expect_in(case_end(lb), c(3, 5))
 })
 
+test_that("is_volatile_anesthesia", {
+   lb <- data.table(
+        Label = c(
+            "prim. Agent exp", "Vaporizer setting",
+            "prim. Agent exp",
+            "prim. Agent exp", "Vaporizer setting",
+            "prim. Agent exp", "Vaporizer setting"
+        ),
+        Current = c(
+            0, 0,
+            1.2,
+            1.2, 8,
+            0, 8
+        ),
+        CaseId = c(
+            1, 1,
+            2,
+            3, 3,
+            4, 4
+        )
+    )
+    expect_equal(is_volatile_anesthesia(lb), c(FALSE, FALSE, TRUE, FALSE))
+})
+
 test_that(".add_anaesthesia_case_id", {
    lb <- data.table(
         DateTime = 1:6,
