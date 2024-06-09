@@ -1,5 +1,6 @@
 (specifications->manifest
   '("r-minimal"
+    "r-covr"
     "r-data-table"
     "r-devtools"
     "r-lubridate"
