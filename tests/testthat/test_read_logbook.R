@@ -12,16 +12,17 @@ test_that(".read_logbook", {
 
 test_that("value_at", {
    lb <- data.table(
-        DateTime = 1:8 * 60,
+        DateTime = lubridate::ymd_hms("2024-06-09 20:00:00") +
+            lubridate::minutes(c(1:9, 12)),
         Label = c("Start of therapy", "Ventilation settings",
                   "Vaporizer setting", "Ventilation settings",
-                  "PEEP", "FGF", "FGF", "FGF"),
-        Current = c(2, 0, 0.5, 2, 5, 0.5, 0.6, 0.7),
-        CaseId = 1
+                  "PEEP", "FGF", "FGF", "FGF", "Start of therapy", "FGF"),
+        Current = c(2, 0, 0.5, 2, 5, 0.5, 0.6, 0.7, 2, 1.5),
+        CaseId = c(rep(1, 8), 2, 2)
     )
-    expect_equal(value_at(lb, "FGF", 5, "start")[,V1], 0.5)
-    expect_equal(value_at(lb, "FGF", 6, "start")[,V1], 0.6)
-    expect_equal(value_at(lb, "FGF", 7, "start")[,V1], 0.7)
+    expect_equal(value_at(lb, "FGF", 5, "start")[,V1], c(0.5, 1.5))
+    expect_equal(value_at(lb, "FGF", 6, "start")[,V1], c(0.6, 1.5))
+    expect_equal(value_at(lb, "FGF", 7, "start")[,V1], c(0.7, 1.5))
     expect_equal(value_at(lb, "FGF", 3, "vaporizer-opening")[,V1], 0.5)
     expect_equal(value_at(lb, "FGF", 2, "mechanical-ventilation")[,V1], 0.5)
     expect_equal(value_at(lb, "PEEP", 15, "start")[,V1], 5)
@@ -36,9 +37,11 @@ test_that(".reference_time", {
         Current = c(2, 0, 0.5, 2),
         CaseId = 1
     )
-    expect_equal(.reference_time(lb, "start"), 1)
-    expect_equal(.reference_time(lb, "vaporizer-opening"), 3)
-    expect_equal(.reference_time(lb, "mechanical-ventilation"), 4)
+    expect_equal(.reference_time(lb, "start")[, ReferenceTime], 1)
+    expect_equal(.reference_time(lb, "vaporizer-opening")[, ReferenceTime], 3)
+    expect_equal(
+        .reference_time(lb, "mechanical-ventilation")[, ReferenceTime], 4
+    )
 })
 
 test_that("filter_short_cases", {
@@ -102,7 +105,7 @@ test_that("is_volatile_anesthesia", {
     expect_equal(is_volatile_anesthesia(lb), c(FALSE, FALSE, TRUE, FALSE))
 })
 
-test_that(".add_anaesthesia_case_id", {
+test_that("add_anaesthesia_case_id", {
    lb <- data.table(
         DateTime = 1:6,
         Label = c(
@@ -110,7 +113,7 @@ test_that(".add_anaesthesia_case_id", {
             "Start of therapy", "Case duration", "foo"
         )
     )
-    expect_equal(.add_anaesthesia_case_id(lb)$CaseId, c(1, 1, NA, 2, 2, NA))
+    expect_equal(add_anaesthesia_case_id(lb)$CaseId, c(1, 1, NA, 2, 2, NA))
 })
 
 test_that(".fgf_index", {

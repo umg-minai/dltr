@@ -36,7 +36,7 @@
         )
     )[order(DateTime),]
     lb[, Current := as.double(Current)]
-    .add_anaesthesia_case_id(lb)
+    add_anaesthesia_case_id(lb)
     lb[!is.na(CaseId) & CaseId > 0,]
 }
 
@@ -61,12 +61,11 @@ value_at <- function(x, label, time,
                         "mechanical-ventilation"
                     )) {
     reference <- match.arg(reference)
-    x[,
-        .SD[
-            Label == label &
-            DateTime <= .reference_time(x, reference) + minutes(time),
-            Current[.N]
-        ],
+    r <- .reference_time(x, reference)
+    r[, ReferenceTime := ReferenceTime + minutes(time)]
+    m <- merge(x, r)
+    m[,
+        .SD[Label == label & DateTime <= ReferenceTime, Current[.N]],
         by = CaseId
     ]
 }
@@ -84,8 +83,9 @@ value_at <- function(x, label, time,
         "mechanical-ventilation" = "Ventilation settings"
     )
     x[,
-      .SD[Label == ref_label & !Current %in% c(0, 9), DateTime[1]],
-      by = CaseId][,V1]
+      .(ReferenceTime =
+        .SD[Label == ref_label & !Current %in% c(0, 9), DateTime[1]]),
+      by = CaseId]
 }
 
 #' Filter cases
@@ -132,7 +132,7 @@ case_start  <- function(x, reference = c(
                    "start", "vaporizer-opening",
                    "mechanical-ventilation"
                    )) {
-    .reference_time(x, reference)
+    .reference_time(x, reference)[, ReferenceTime]
 }
 
 #' @return `POSIXct`, end times
@@ -166,10 +166,14 @@ is_volatile_anesthesia <- function(x) {
     ][, V1]
 }
 
+#' Case Id
+#'
+#' Add an additional column with a corresponding case id.
+#'
 #' @param x `data.table`, logbook data
-#' @return `integer`, row indices
-#' @noRd
-.add_anaesthesia_case_id <- function(x) {
+#' @return `data.table`, with additional CaseId column.
+#' @export
+add_anaesthesia_case_id <- function(x) {
     setorder(x, DateTime)
     x[, CaseId := cumsum(Label == "Start of therapy")]
     x[, CaseId := fifelse(
