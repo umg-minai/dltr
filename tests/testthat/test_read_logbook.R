@@ -176,8 +176,8 @@ test_that(".melt_measurements", {
             c(rep("2024-06-04 12:45", 3), "2024-06-04 13:00")
         ),
         Label = c("Measurements", "foo", "bar", "Measurements"),
-        `etCO2 [mmHg]` = c(35, NA, NA, 37),
-        `MV [l/min]` = c(5.0, NA, NA, 4.8)
+        `etCO2 [mmHg]` = c(35, "ERR", NA, 37),
+        `MV [l/min]` = c(5.0, NA, "+++", 4.8)
     )
     r <- data.table(
         DateTime = lubridate::ymd_hm(

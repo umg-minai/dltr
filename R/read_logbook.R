@@ -303,7 +303,11 @@ add_anaesthesia_case_id <- function(x) {
     measure.vars <- colnames(x)[
         grepl("^etCO2|^MV|^Pmean|^PIP|^PP|^PEEP|^FiO|^prim.", colnames(x))
     ]
-    x[, (measure.vars) := lapply(.SD, as.double), .SDcols = measure.vars]
+    x[,
+        (measure.vars) :=
+            lapply(.SD, function(x)as.double(sub("ERR|\\+\\+\\+", "", x))),
+        .SDcols = measure.vars
+    ]
     m <- melt(
         x[Label == "Measurements", c("DateTime", measure.vars), with = FALSE],
         id.vars = "DateTime",

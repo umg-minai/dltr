@@ -2,6 +2,10 @@
 
 ## Changes in development version
 
+## Changes in 0.0.3
+
+- Fix `.melt_measurements` for erroneous values ("ERR" or "+++").
+
 ## Changes in 0.0.2
 
 - Export `add_anesthesia_case_id`.
