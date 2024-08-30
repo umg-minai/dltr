@@ -15,8 +15,8 @@ We assume you have `guix` installed to generate an isolated developement
 environment in the following way:
 
 ```bash
-git clone https://github.com/umg-minai/vct-or-mc.git
-cd vct-or-mc
+git clone https://github.com/umg-minai/dltr.git
+cd dltr
 echo "$(pwd)" >> ~/.config/guix/shell-authorized-directories
 guix shell
 ```
