@@ -154,18 +154,20 @@ test_that(".vaporizer_setting_index", {
 test_that(".vaporizer_settings", {
     lb <- data.table(
         DateTime = lubridate::ymd_hm(
-            c(rep("2024-06-04 12:45", 3), "2024-06-04 13:00")
+            c(rep("2024-06-04 12:45", 3), rep("2024-06-04 13:00", 3))
         ),
-        Label = c("Vaporizer setting", "foo", "bar", "Vaporizer setting"),
-        Current = c(5.0, NA, NA, 4.8),
+        Label =
+            c("Vaporizer setting", "foo", "bar", rep("Vaporizer setting", 3)),
+        Current = c(5.0, NA, NA, 4.8, "T", "---"),
         Unit = "",
-        `etCO2 [mmHg]` = c(35, NA, NA, 37)
+        `etCO2 [mmHg]` = c(35, NA, NA, 37, NA, NA)
     )
     r <- data.table(
-        DateTime = lubridate::ymd_hm(c("2024-06-04 12:45", "2024-06-04 13:00")),
-        Label = rep(c("Vaporizer setting"), 2),
-        Current = c(5.0, 4.8),
-        Unit = rep(c("Vol%"), 2)
+        DateTime = lubridate::ymd_hm(
+            c("2024-06-04 12:45", rep("2024-06-04 13:00", 3))),
+        Label = rep(c("Vaporizer setting"), 4),
+        Current = c(5.0, 4.8, 0.0, 0.0),
+        Unit = rep(c("Vol%"), 4)
     )
     expect_equal(.vaporizer_settings(lb), r)
 })

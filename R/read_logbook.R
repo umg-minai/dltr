@@ -247,7 +247,7 @@ add_anaesthesia_case_id <- function(x) {
     x <- x[Label == "Vaporizer setting", .(DateTime, Label, Current, Unit)]
     x[,
         `:=` (
-            Current = as.double(sub("---|T", "", Current)),
+            Current = as.double(sub("---|T", "0.0", Current)),
             Unit = "Vol%"
         )
     ]

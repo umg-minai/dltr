@@ -2,6 +2,10 @@
 
 ## Changes in development version
 
+## Changes in 0.0.4
+
+- Replace "---" and "T" with "0.0" in `.vaporizer_settings`.
+
 ## Changes in 0.0.3
 
 - Fix `.melt_measurements` for erroneous values ("ERR" or "+++").

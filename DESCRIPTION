@@ -1,6 +1,6 @@
 Package: dltr
 Title: Draeger logbook and trend reader
-Version: 0.0.3
+Version: 0.0.4
 Authors@R:
     person(
         given = "Sebastian", family = "Gibb",
